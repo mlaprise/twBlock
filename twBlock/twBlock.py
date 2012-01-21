@@ -1,10 +1,9 @@
-import twython.core as twython
+from twython import Twython
 import time
 import PyRSS2Gen
 import datetime
 import re
 from operator import itemgetter
-import simplegeo
 
 '''
 
@@ -159,8 +158,8 @@ class twSource(twBlock):
 	'''
 	Return the home timeline
 	'''
-	def __init__(self, user, pw, count = 20, nbrPage = 1, tlInput = []):
-		self.twitter = twython.setup(username=user, password=pw)
+	def __init__(self, twitter_token, twitter_secret, oauth_token, oauth_secret, count = 20, nbrPage = 1, tlInput = []):
+		self.twitter = Twython(twitter_token, twitter_secret, oauth_token, oauth_secret)
 		self.nbrInput = 0	
 		self.nbrOutput = 1
 		self.count = count
@@ -432,32 +431,6 @@ class twHasLink(twBlock):
 
 	def output(self):
 		tlFiltered = filter(lambda tweet: tweet['text'].count(self.link) >= 1, self.timeLine())
-		return tlFiltered
-
-
-class twSimpleGeo(twBlock):
-	'''
-	Return the tweets containing a GeoTag and send it to SimpleGeo
-	'''
-	def __init__(self, tlInput = []):
-
-		self.nbrInput = 1
-		self.nbrOutput = 1
-		self.timeLine = []
-	
-	def setInput(self,tlInput):
-		self.timeLine = tlInput
-
-	def output(self):
-		smpGeoClient = simplegeo.Client('c3ZCgWtrbPTBV4WeDe2pYq4gHyp7zzZq','CsDuTvA6VXDw7FWZjLy2SsqdY4f9hWwD')
-		layerName = 'premiertest1'
-		smpGeoRecs = []
-		tlFiltered = filter(lambda tweet: tweet['geo'] != None, self.timeLine())
-		for tweet in tlFiltered:
-			geoCoords = tweet['geo']['coordinates']
-			smpGeoRecs.append(simplegeo.Record(layerName, tweet['user']['screen_name'], geoCoords[0], geoCoords[1]))
-		
-		smpGeoClient.add_records(layerName, smpGeoRecs)
 		return tlFiltered
 
 
